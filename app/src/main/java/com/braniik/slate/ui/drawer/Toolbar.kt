@@ -26,8 +26,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.braniik.slate.data.LocalToolbarTextColor
@@ -111,6 +113,31 @@ private fun HorizontalToolbar(
     }
 }
 
+// Taken from https://stackoverflow.com/a/79880351
+//   which is based on https://dev.to/vladleesi/vertical-text-in-jetpack-compose-without-rotation-width-problems-4n2m
+private fun Modifier.rotateVertically(clockwise: Boolean): Modifier {
+    val rotate = Modifier.rotate(if (clockwise) 90f else -90f)
+    val adjustBounds = layout { measurable, constraints ->
+        val placeable = measurable.measure(
+            constraints.copy(
+                minWidth = 0,
+                minHeight = 0,
+                maxWidth = Constraints.Infinity,
+                maxHeight = Constraints.Infinity
+            )
+        )
+        layout(placeable.height, placeable.width) {
+            placeable.place(
+                x = -(placeable.width / 2 - placeable.height / 2),
+                y = -(placeable.height / 2 - placeable.width / 2)
+            )
+        }
+    }
+    return this
+        .then(rotate)
+        .then(adjustBounds)
+}
+
 @Composable
 private fun VerticalToolbar(
     position: String,
@@ -118,13 +145,6 @@ private fun VerticalToolbar(
     actions: @Composable () -> Unit
 ) {
     val textColor = LocalToolbarTextColor.current
-    val rotation =
-        if (position == "left") {
-            -90f
-        } else {
-            90f
-        }
-
     Column(
         modifier = Modifier
             .fillMaxHeight()
@@ -147,7 +167,7 @@ private fun VerticalToolbar(
                 color = textColor,
                 letterSpacing = 4.sp,
                 maxLines = 1,
-                modifier = Modifier.rotate(rotation)
+                modifier = Modifier.rotateVertically(position == "right")
             )
         }
         actions()

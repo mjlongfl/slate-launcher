@@ -4,8 +4,6 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.RowScope
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -27,7 +25,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -78,38 +75,40 @@ private fun HorizontalToolbar(
     actions: @Composable () -> Unit
 ) {
     val textColor = LocalToolbarTextColor.current
-    val insets = if (position == "bottom") Modifier.navigationBarsPadding()
-    else Modifier.statusBarsPadding()
+    val insets =
+        if (position == "bottom") {
+            Modifier.navigationBarsPadding()
+        } else {
+            Modifier.statusBarsPadding()
+        }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .then(insets)
             .padding(horizontal = 16.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement =
+            if (title.isBlank()) {
+                Arrangement.End
+            } else {
+                Arrangement.SpaceBetween
+            },
         verticalAlignment = Alignment.CenterVertically
     ) {
-        ToolbarTitle(title, textColor)
+        if (title.isNotBlank()) {
+            Text(
+                title,
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Light,
+                color = textColor,
+                letterSpacing = 4.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f, fill = false)
+            )
+        }
         actions()
     }
-}
-
-@Composable
-private fun RowScope.ToolbarTitle(title: String, textColor: Color) {
-    if (title.isBlank()) {
-        Spacer(Modifier)
-        return
-    }
-    Text(
-        title,
-        fontSize = 18.sp,
-        fontWeight = FontWeight.Light,
-        color = textColor,
-        letterSpacing = 4.sp,
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis,
-        modifier = Modifier.weight(1f, fill = false)
-    )
 }
 
 @Composable
@@ -119,7 +118,12 @@ private fun VerticalToolbar(
     actions: @Composable () -> Unit
 ) {
     val textColor = LocalToolbarTextColor.current
-    val rotation = if (position == "left") -90f else 90f
+    val rotation =
+        if (position == "left") {
+            -90f
+        } else {
+            90f
+        }
 
     Column(
         modifier = Modifier
@@ -127,7 +131,12 @@ private fun VerticalToolbar(
             .statusBarsPadding()
             .navigationBarsPadding()
             .padding(horizontal = 4.dp, vertical = 12.dp),
-        verticalArrangement = Arrangement.SpaceBetween,
+        verticalArrangement =
+            if (title.isBlank()) {
+                Arrangement.Bottom
+            } else {
+                Arrangement.SpaceBetween
+            },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         if (title.isNotBlank()) {
@@ -140,10 +149,7 @@ private fun VerticalToolbar(
                 maxLines = 1,
                 modifier = Modifier.rotate(rotation)
             )
-        } else {
-            Spacer(Modifier)
         }
-
         actions()
     }
 }
